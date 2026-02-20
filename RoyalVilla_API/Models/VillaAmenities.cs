@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RoyalVilla_API.Models
 {
-    public class VillaAmenitiesDTO
+    public class VillaAmenities
     {
         [Key]
         public int Id { get; set; }
