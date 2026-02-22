@@ -75,7 +75,7 @@ namespace RoyalVilla_API.Controllers
                     return NotFound(ApiResponse<object>.BadRequest("Villa Amenities data is required"));
                 }
                 var duplicateVilla = await _db.Villa.FirstOrDefaultAsync(i => i.Id == villaAmentiesDTO.VillaId);
-                if (duplicateVilla != null)
+                if (duplicateVilla == null)
                 {
                     return Conflict(ApiResponse<object>.Conflict($"A villa with the id {villaAmentiesDTO.VillaId} already exists"));
                 }
@@ -100,7 +100,7 @@ namespace RoyalVilla_API.Controllers
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ApiResponse<VillaAmentiesDTO>>>UpdateVilla(int id,VillaAmentiesUpdateDTO villaAmentiesDTO)
+        public async Task<ActionResult<ApiResponse<VillaAmentiesDTO>>>UpdateVillaAmenities(int id,VillaAmentiesUpdateDTO villaAmentiesDTO)
         {
             try
             {
@@ -119,8 +119,8 @@ namespace RoyalVilla_API.Controllers
                     return NotFound(ApiResponse<Object>.NotFound($"VillaAmenities with {id} was not found"));
                 }
 
-                var duplicateVilla = await _db.VillaAmenities.FirstOrDefaultAsync(i=>i.Name.ToLower() == villaAmentiesDTO.Name.ToLower() && i.Id!=id);
-                if(duplicateVilla != null)
+                var villaExists = await _db.Villa.FirstOrDefaultAsync(i=>i.Id == villaAmentiesDTO.VillaId);
+                if(villaExists == null)
                 {
                     return Conflict(ApiResponse<object>.Conflict($"A villa with the name {villaAmentiesDTO.Name} already exists"));
                 }
@@ -128,12 +128,12 @@ namespace RoyalVilla_API.Controllers
                 existingVilla.UpdatedDate = DateTime.Now;
                 
                 await _db.SaveChangesAsync();
-                var response = ApiResponse<VillaAmentiesDTO>.Ok("VillaAmenities updated successfully", _mapper.Map<VillaAmentiesDTO>(villaAmentiesDTO));
+                var response = ApiResponse<VillaAmentiesDTO>.Ok("VillaAmenities updated successfully", _mapper.Map<VillaAmentiesDTO>(existingVilla));
                 return Ok(response);
             }
             catch (Exception ex)
             {
-                var errorResponse = ApiResponse<Object>.Error(500, $"An error occured while retrieving villa with ID {id}:{ex.Message}", ex.Message);
+                var errorResponse = ApiResponse<Object>.Error(500, $"An error occured while retrieving villaAmenities with ID {id}:{ex.Message}", ex.Message);
                 return StatusCode(500, errorResponse);
 
             }
@@ -144,7 +144,7 @@ namespace RoyalVilla_API.Controllers
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<object>>> DeleteVilla(int id)
+        public async Task<ActionResult<ApiResponse<object>>> DeleteVillaAmenities(int id)
         {
             try
             {
@@ -152,13 +152,13 @@ namespace RoyalVilla_API.Controllers
                 {
                     return NotFound(ApiResponse<Object>.NotFound("VillaAmenities ID must be greater than 0"));
                 }
-                var existingVilla = await _db.VillaAmenities.FirstOrDefaultAsync(i => i.Id == id);
+                var existingVillaAmenities = await _db.VillaAmenities.FirstOrDefaultAsync(i => i.Id == id);
 
-                if (existingVilla == null)
+                if (existingVillaAmenities == null)
                 {
                     return NotFound(ApiResponse<Object>.NotFound($"VillaAmenities with {id} not found"));
                 }
-                _db.VillaAmenities.Remove(existingVilla);
+                _db.VillaAmenities.Remove(existingVillaAmenities);
                 await _db.SaveChangesAsync();
 
                 return Ok(ApiResponse<object>.NoContent("VillaAmenities deleted Successfully"));
@@ -166,7 +166,7 @@ namespace RoyalVilla_API.Controllers
             catch (Exception ex)
             {
 
-                var errorResponse = ApiResponse<Object>.Error(500, $"An error occured while retrieving villa with ID {id}:{ex.Message}", ex.Message);
+                var errorResponse = ApiResponse<Object>.Error(500, $"An error occured while retrieving villa Amenities with ID {id}:{ex.Message}", ex.Message);
                 return StatusCode(500, errorResponse);
 
             }
